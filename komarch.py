@@ -8,12 +8,16 @@ from lxml import etree
 def parse_architect_details(detail_html_page):
     soup = BeautifulSoup(detail_html_page.content, "html.parser")
     kontakt_div = soup.find('div', string="Kontakt:")
-    phone_number = None
+    phone_number = ""
     if kontakt_div:
         phone_parent = kontakt_div.find_parent()
-        phone_match = re.search(r'\+?\d[\d\s-]+', phone_parent.text)
-        if phone_match:
-            phone_number = phone_match.group()
+        phone_pattern = re.compile(r'''
+               (.[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*)
+           ''', re.VERBOSE)
+        found_numbers = phone_pattern.findall(phone_parent.text)
+        for anumber in found_numbers:
+            phone_number += str(anumber).split('\n')[0].lstrip() + " "
+
 
     address_div = soup.find('div', string="Adresa:")
     address = None
